@@ -1,0 +1,3 @@
+/* tailwind additions goes here */
+@import "tailwindcss";
+@plugin "daisyui";
