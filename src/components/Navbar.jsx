@@ -1,8 +1,34 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { removeUser } from "../store/userSlice";
+import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
-  const user = useSelector((store) => store.user.user);
+  const user = useSelector((store) => store.user);
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    try {
+      // Call logout API
+      const response = await fetch("http://localhost:7777/logout", {
+        method: "GET",
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        // Remove user from Redux state
+        dispatch(removeUser());
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still remove user from Redux even if API call fails
+      dispatch(removeUser());
+    }
+  };
+
   return (
     <div className="navbar bg-base-100 shadow-sm">
       <div className="flex-1">
@@ -19,7 +45,7 @@ const Navbar = () => {
             <div className="w-10 rounded-full">
               <img
                 alt="Tailwind CSS Navbar component"
-                src={user.photoURL}
+                src={user.photoUrl}
               />
             </div>
           </div>
@@ -28,15 +54,17 @@ const Navbar = () => {
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
           >
             <li>
-              <a className="justify-between">
+              {/* <a className="justify-between">
                 Profile
-              </a>
+              </a> */}
+              <Link to="/profile">Profile</Link>
             </li>
             <li>
               <a>Settings</a>
             </li>
             <li>
-              <a>Logout</a>
+              {/* <a>Logout</a> */}
+              <Link to="/login" onClick={handleLogout}>Logout</Link>
             </li>
           </ul>
         </div>

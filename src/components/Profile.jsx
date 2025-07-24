@@ -1,26 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { BASE_URL } from "../utils/constants";
+import { toast } from "react-hot-toast";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const user = useSelector((store) => store.user);
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    username: "johndoe_dev",
-    email: "john.doe@example.com",
-    bio: "Full-stack developer passionate about creating innovative web applications. Love working with React, Node.js, and cloud technologies. Always eager to learn new technologies and collaborate on exciting projects!",
-    skills: ["React", "Node.js", "TypeScript", "MongoDB", "AWS"],
-    location: "San Francisco, CA",
-    experience: "5 years",
-    github: "https://github.com/johndoe",
-    linkedin: "https://linkedin.com/in/johndoe",
-    website: "https://johndoe.dev",
-    availability: "Available for new projects",
-    hourlyRate: "$75/hour",
-    languages: ["English", "Spanish"],
-    interests: ["Open Source", "Machine Learning", "UI/UX Design"]
+    firstName: "",
+    lastName: "",
+    email: "",
+    age: "",
+    gender: "",
+    photoUrl: "",
+    about: "",
+    skills: []
   });
 
-  const [newSkill, setNewSkill] = useState("");
+  // Update profileData when user data changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        age: user.age || "",
+        gender: user.gender || "",
+        photoUrl: user.photoUrl || "https://cdn.pixabay.com/photo/2017/02/23/13/05/avatar-2092113_1280.png",
+        about: user.about || "Hey! Send me a connection request if you want to connect with me",
+        skills: user.skills || []
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setProfileData({
@@ -29,10 +40,38 @@ const Profile = () => {
     });
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Handle save logic here
-    console.log("Profile updated:", profileData);
+  const handleSave = async () => {
+    try {
+      // Create a copy of profileData without email
+      const { email, ...profileDataWithoutEmail } = profileData;
+      
+      // Convert age to number if it exists
+      // if (profileDataWithoutEmail.age) {
+      //   profileDataWithoutEmail.age = parseInt(profileDataWithoutEmail.age, 10);
+      // }
+      
+      // Call API to update profile
+      const response = await fetch(`${BASE_URL}/profile/edit`, {
+        method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(profileDataWithoutEmail),
+      });
+
+      if (response.ok) {
+        setIsEditing(false);
+        // success toast message
+        toast.success("Profile updated successfully");
+      } else {
+        // error toast message
+        toast.error("Failed to update profile");
+      }
+    } catch (error) {
+      // error toast message
+      toast.error("Error updating profile");
+    }
   };
 
   const addSkill = () => {
@@ -51,6 +90,20 @@ const Profile = () => {
       skills: profileData.skills.filter(skill => skill !== skillToRemove)
     });
   };
+
+  const [newSkill, setNewSkill] = useState("");
+
+  // Show loading or redirect if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Please log in to view your profile</h2>
+          <p className="text-gray-600">You need to be logged in to access this page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -75,7 +128,7 @@ const Profile = () => {
                   <div className="avatar mb-4">
                     <div className="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                       <img
-                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                        src={profileData.photoUrl}
                         alt="Profile"
                         className="w-full h-full object-cover rounded-full"
                       />
@@ -91,6 +144,7 @@ const Profile = () => {
                         onChange={handleChange}
                         className="input input-bordered w-full"
                         placeholder="First Name"
+                        maxLength={20}
                       />
                       <input
                         type="text"
@@ -107,14 +161,11 @@ const Profile = () => {
                     </h2>
                   )}
                   
-                  <p className="text-gray-600 mb-4">@{profileData.username}</p>
-                  
-                  <div className="badge badge-primary mb-2">{profileData.availability}</div>
-                  <p className="text-lg font-semibold text-green-600 mb-4">{profileData.hourlyRate}</p>
+                  <p className="text-gray-600 mb-4">{profileData.email}</p>
                   
                   <div className="space-y-2 text-sm text-gray-600">
-                    <p>📍 {profileData.location}</p>
-                    <p>💼 {profileData.experience} experience</p>
+                    {profileData.age && <p>🎂 {profileData.age} years old</p>}
+                    {profileData.gender && <p>👤 {profileData.gender}</p>}
                   </div>
                 </div>
               </div>
@@ -143,39 +194,41 @@ const Profile = () => {
                     
                     <div>
                       <label className="label">
-                        <span className="label-text font-medium">GitHub</span>
+                        <span className="label-text font-medium">Age</span>
                       </label>
                       {isEditing ? (
                         <input
-                          type="url"
-                          name="github"
-                          value={profileData.github}
+                          type="number"
+                          name="age"
+                          value={profileData.age}
                           onChange={handleChange}
                           className="input input-bordered w-full"
+                          placeholder="Enter your age"
+                          min="18"
                         />
                       ) : (
-                        <a href={profileData.github} className="link link-primary" target="_blank" rel="noopener noreferrer">
-                          {profileData.github}
-                        </a>
+                        <p className="text-gray-700">{profileData.age || "Not specified"}</p>
                       )}
                     </div>
                     
                     <div>
                       <label className="label">
-                        <span className="label-text font-medium">LinkedIn</span>
+                        <span className="label-text font-medium">Gender</span>
                       </label>
                       {isEditing ? (
-                        <input
-                          type="url"
-                          name="linkedin"
-                          value={profileData.linkedin}
+                        <select
+                          name="gender"
+                          value={profileData.gender}
                           onChange={handleChange}
-                          className="input input-bordered w-full"
-                        />
+                          className="select select-bordered w-full"
+                        >
+                          <option value="">Select gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
                       ) : (
-                        <a href={profileData.linkedin} className="link link-primary" target="_blank" rel="noopener noreferrer">
-                          {profileData.linkedin}
-                        </a>
+                        <p className="text-gray-700">{profileData.gender || "Not specified"}</p>
                       )}
                     </div>
                   </div>
@@ -183,22 +236,24 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Right Column - Bio, Skills, etc. */}
+            {/* Right Column - About, Skills, etc. */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Bio */}
+              {/* About */}
               <div className="card bg-white shadow-lg">
                 <div className="card-body">
                   <h3 className="card-title mb-4">About Me</h3>
                   {isEditing ? (
                     <textarea
-                      name="bio"
-                      value={profileData.bio}
+                      name="about"
+                      value={profileData.about}
                       onChange={handleChange}
                       className="textarea textarea-bordered w-full h-32"
                       placeholder="Tell us about yourself..."
                     />
                   ) : (
-                    <p className="text-gray-700 leading-relaxed">{profileData.bio}</p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {profileData.about || "No bio available. Click 'Edit Profile' to add one."}
+                    </p>
                   )}
                 </div>
               </div>
@@ -208,19 +263,23 @@ const Profile = () => {
                 <div className="card-body">
                   <h3 className="card-title mb-4">Skills & Technologies</h3>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {profileData.skills.map((skill, index) => (
-                      <div key={index} className="badge badge-outline badge-lg">
-                        {skill}
-                        {isEditing && (
-                          <button
-                            onClick={() => removeSkill(skill)}
-                            className="ml-2 text-red-500 hover:text-red-700"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                    {profileData.skills && profileData.skills.length > 0 ? (
+                      profileData.skills.map((skill, index) => (
+                        <div key={index} className="badge badge-outline badge-lg">
+                          {skill}
+                          {isEditing && (
+                            <button
+                              onClick={() => removeSkill(skill)}
+                              className="ml-2 text-red-500 hover:text-red-700"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500">No skills added yet.</p>
+                    )}
                   </div>
                   
                   {isEditing && (
@@ -241,31 +300,22 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Interests */}
+              {/* Profile Picture URL */}
               <div className="card bg-white shadow-lg">
                 <div className="card-body">
-                  <h3 className="card-title mb-4">Interests</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profileData.interests.map((interest, index) => (
-                      <div key={index} className="badge badge-secondary">
-                        {interest}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Languages */}
-              <div className="card bg-white shadow-lg">
-                <div className="card-body">
-                  <h3 className="card-title mb-4">Languages</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profileData.languages.map((language, index) => (
-                      <div key={index} className="badge badge-accent">
-                        {language}
-                      </div>
-                    ))}
-                  </div>
+                  <h3 className="card-title mb-4">Profile Picture</h3>
+                  {isEditing ? (
+                    <input
+                      type="url"
+                      name="photoUrl"
+                      value={profileData.photoUrl}
+                      onChange={handleChange}
+                      className="input input-bordered w-full"
+                      placeholder="Enter profile picture URL"
+                    />
+                  ) : (
+                    <p className="text-gray-700 break-all">{profileData.photoUrl}</p>
+                  )}
                 </div>
               </div>
             </div>

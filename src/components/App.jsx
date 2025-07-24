@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import Body from "./Body";
 import Login from "./Login";
 import Signup from "./Signup";
@@ -18,6 +19,28 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
     </>
   );
 }
