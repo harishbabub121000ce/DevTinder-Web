@@ -5,6 +5,9 @@ import Login from "./Login";
 import Signup from "./Signup";
 import Profile from "./Profile";
 import Home from "./Home";
+import Feed from "./Feed";
+import Connections from "./Connections";
+import PendingRequests from "./PendingRequests";
 
 function App() {
   return (
@@ -14,8 +17,11 @@ function App() {
           <Route path="/" element={<Body />}>
             <Route index element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/sign-up" element={<Signup />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/connections" element={<Connections />} />
+            <Route path="/pending-requests" element={<PendingRequests />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -54,16 +54,18 @@ const Navbar = () => {
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
           >
             <li>
-              {/* <a className="justify-between">
-                Profile
-              </a> */}
               <Link to="/profile">Profile</Link>
             </li>
             <li>
-              <a>Settings</a>
+              <Link to="/feed">Feed</Link>
             </li>
             <li>
-              {/* <a>Logout</a> */}
+              <Link to="/connections">Connections</Link>
+            </li>
+            <li>
+              <Link to="/pending-requests">Pending Requests</Link>
+            </li>
+            <li>
               <Link to="/login" onClick={handleLogout}>Logout</Link>
             </li>
           </ul>

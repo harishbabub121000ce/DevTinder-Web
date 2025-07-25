@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { BASE_URL } from "../utils/constants";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser } from "../store/userSlice";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -7,13 +12,13 @@ const Signup = () => {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    username: "",
     skills: "",
-    bio: "",
+    about: "",
+    age: ""
   });
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleChange = (e) => {
@@ -25,17 +30,37 @@ const Signup = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
-    }
     if (!agreedToTerms) {
       alert("Please agree to the terms and conditions");
       return;
     }
     // Handle signup logic here
-    console.log("Signup attempt:", formData);
+    signup(formData);
   };
+
+  const signup = async (formData) => {
+    try {
+      const response = await fetch(`${BASE_URL}/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success("Account created successfully!");
+        // update the user in the redux store
+        dispatch(addUser(data.user));
+        navigate("/profile");
+      } else {
+        toast.error(data.message || "Signup failed");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast.error("Something went wrong. Please try again.");
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -84,22 +109,6 @@ const Signup = () => {
                 </div>
               </div>
 
-              {/* Username */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Username</span>
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="Choose a unique username"
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
-
               {/* Email */}
               <div className="form-control">
                 <label className="label">
@@ -116,53 +125,28 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Password Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">Password</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Create a password"
-                      className="input input-bordered w-full pr-12"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
-                </div>
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">Confirm Password</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm your password"
-                      className="input input-bordered w-full pr-12"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
+              {/* Password */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Password</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Create a password"
+                    className="input input-bordered w-full pr-12"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? "👁️" : "👁️‍🗨️"}
+                  </button>
                 </div>
               </div>
 
@@ -187,8 +171,8 @@ const Signup = () => {
                   <span className="label-text font-medium">Bio (Optional)</span>
                 </label>
                 <textarea
-                  name="bio"
-                  value={formData.bio}
+                  name="about"
+                  value={formData.about}
                   onChange={handleChange}
                   placeholder="Tell us about yourself..."
                   className="textarea textarea-bordered w-full h-24"
@@ -196,7 +180,7 @@ const Signup = () => {
                 />
                 <label className="label">
                   <span className="label-text-alt text-gray-500">
-                    {formData.bio.length}/200 characters
+                    {formData.about.length}/200 characters
                   </span>
                 </label>
               </div>

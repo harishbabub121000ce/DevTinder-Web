@@ -44,6 +44,11 @@ const Login = () => {
     }
   };
 
+  const handleSignupClick = () => {
+    // navigate to signup page
+    navigate("/sign-up");
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -142,7 +147,7 @@ const Login = () => {
             <div className="text-center mt-6">
               <p className="text-gray-600">
                 Don't have an account?{" "}
-                <Link to="/signup" className="link link-primary font-medium">
+                <Link to="/sign-up" className="link link-primary font-medium" onClick={handleSignupClick}>
                   Sign up
                 </Link>
               </p>
